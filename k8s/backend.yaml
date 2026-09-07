@@ -17,7 +17,7 @@ spec:
       containers:
         - name: backend
           # Replace with your Docker Hub image; CI updates this automatically.
-          image: YOUR_DOCKERHUB_USERNAME/fluidai-backend:latest
+          image: harshk015/fluidai-backend:latest
           ports:
             - containerPort: 5000
           envFrom:
