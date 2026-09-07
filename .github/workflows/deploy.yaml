@@ -1,0 +1,41 @@
+name: Build and Deploy
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/**'
+      - 'k8s/**'
+      - '.github/workflows/deploy.yml'
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./app
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/fluidai-backend:${{ github.sha }},${{ secrets.DOCKERHUB_USERNAME }}/fluidai-backend:latest
+
+  deploy:
+    needs: build-and-push
+    runs-on: [self-hosted]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Deploy new image to k3s
+        run: |
+          kubectl apply -f k8s/configmap.yaml
+          kubectl apply -f k8s/redis.yaml
+          kubectl apply -f k8s/backend.yaml
+          kubectl set image deployment/backend-app backend=${{ secrets.DOCKERHUB_USERNAME }}/fluidai-backend:${{ github.sha }}
+          kubectl rollout status deployment/backend-app --timeout=90s
