@@ -21,7 +21,7 @@ r = redis.Redis(
 def index():
     count = r.incr("hits")
     return jsonify({
-        "message": "Hello from Fluid AI DevOps challenge from Harsh K",
+        "message": "Hello from Fluid AI DevOps challenge",
         "hits": count,
         "pod": os.environ.get("HOSTNAME", "unknown"),
     })
