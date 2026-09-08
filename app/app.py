@@ -39,6 +39,7 @@ def health():
         r.ping()
         return jsonify({"status": "ok"}), 200
     except Exception as e:
+        app.logger.error(f"Health check failed: {e}")
         return jsonify({"status": "error", "detail": str(e)}), 500
 
 
